@@ -1,3 +1,54 @@
+<?php 
+
+require "../../assets/database/config.php";
+
+if(isset($_POST['addproduct']) && $_SERVER['REQUEST_METHOD']=="POST"){
+
+$name=$_POST['prdname'];
+$price=$_POST['price'];
+$description=$_POST['description'];
+echo $category_id=$_POST['category_id'];
+$availability="yes";
+$prd_code=22;
+$prd_number=$prd_code+55555;
+
+
+if($_FILES['image']['error'] ==4){
+    echo "
+    <script>alert('Image not found')</script>";
+}else{
+
+$imgname=$_FILES['image']['name'];
+$tmpname=$_FILES['image']['tmp_name'];
+$size=$_FILES['image']['size'];
+
+$validExtensions=["png","jpg","jpeg"];
+// abc.jpg
+$extension= explode(".",$imgname);// ["abc", "jpg"]
+// print_r($extension);
+$extension= strtolower(end($extension));//jpg
+
+if($size > 1000000){
+    echo "<script>alert('File too large')</script>";
+}elseif(!in_array($extension, $validExtensions)){
+    echo "<script>alert('File type not supported')</script>";
+}else{
+
+$insert="INSERT INTO `products`
+(`Product_name`, `ProductCode`, `ProductNumber`, `Description`, `product_image`, `category_id`, `Price`, `Availability`) VALUES
+
+ ('$name','$prd_code','$prd_number','$description','$imgname','$category_id','$price','$availability')";
+$result=mysqli_query($connection, $insert) or die("failed");
+if($result){
+    move_uploaded_file($tmpname, "uploads/".$imgname);
+    echo "<script>alert('Outfit registered succesfully')</script>";
+}
+}
+}
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,7 +56,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Star Admin2 </title>
+  <title>First Wish Stationaery </title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../../assets/vendors/feather/feather.css">
   <link rel="stylesheet" href="../../assets/vendors/mdi/css/materialdesignicons.min.css">
@@ -46,7 +97,7 @@
   <div class="navbar-menu-wrapper d-flex align-items-top">
     <ul class="navbar-nav">
       <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-        <h1 class="welcome-text">Good Morning, <span class="text-black fw-bold">John Doe</span></h1>
+        <h1 class="welcome-text">Hello <span class="text-black fw-bold">First Wish Stationery</span></h1>
         <h3 class="welcome-sub-text">Your performance summary this week </h3>
       </li>
     </ul>
@@ -492,90 +543,56 @@
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row">
-            <div class="col-md-6 grid-margin stretch-card">
+            <div class="col-md-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Default form</h4>
+                  <h4 class="card-title text-center" > Add Products</h4>
                   <p class="card-description">
-                    Basic form layout
+                   Enter Product Details
                   </p>
-                  <form class="forms-sample">
+                  <form class="forms-sample" enctype="multipart/form-data" method="post">
                     <div class="form-group">
-                      <label for="exampleInputUsername1">Username</label>
-                      <input type="text" class="form-control" id="exampleInputUsername1" placeholder="Username">
-                    </div>
-                    <div class="form-group">
-                      <label for="exampleInputEmail1">Email address</label>
-                      <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">
+                      <label for="prdname">Enter Product Name</label>
+                      <input type="text" class="form-control" id="prdname" name="prdname" placeholder="Product Name">
                     </div>
                     <div class="form-group">
-                      <label for="exampleInputPassword1">Password</label>
-                      <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                      <label for="description">Enter Product Description</label>
+                      <input type="text" class="form-control" name="description" placeholder="Description">
                     </div>
                     <div class="form-group">
-                      <label for="exampleInputConfirmPassword1">Confirm Password</label>
-                      <input type="password" class="form-control" id="exampleInputConfirmPassword1"
-                        placeholder="Password">
+                      <label for="price">Product price</label>
+                      <input type="number" class="form-control" name="price" placeholder="price">
                     </div>
-                    <div class="form-check form-check-flat form-check-primary">
-                      <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input">
-                        Remember me
-                      </label>
+                  
+                    <div class="form-group">
+                      <label for="category_id">Choose Category</label>
+                      <select  id="category_id" class="form-control" name="category_id">
+                      <?php 
+            $getBrands="SELECT * From `category`;";
+            $getBrands_run=mysqli_query($connection, $getBrands) or die("failed");
+            if(mysqli_num_rows( $getBrands_run) > 0){
+                while($brand=mysqli_fetch_assoc($getBrands_run)){
+                    ?>
+                    <option value="<?=$brand['category_id']?>"><?=$brand['category_name']?></option>
+                    
+                    <?php
+                }
+            }
+            
+            
+            ?>
+
+
+                      </select>
                     </div>
-                    <button type="submit" class="btn btn-primary me-2">Submit</button>
-                    <button class="btn btn-light">Cancel</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Horizontal Form</h4>
-                  <p class="card-description">
-                    Horizontal form layout
-                  </p>
-                  <form class="forms-sample">
-                    <div class="form-group row">
-                      <label for="exampleInputUsername2" class="col-sm-3 col-form-label">Email</label>
-                      <div class="col-sm-9">
-                        <input type="text" class="form-control" id="exampleInputUsername2" placeholder="Username">
-                      </div>
+                   
+                    
+                    <div class="form-group">
+                    <label for="image">Product picture</label>
+                    <input type="file" name="image" class="form-control"  placeholder="Upload File" aria-label="Upload File" aria-describedby="basic-addon1">
                     </div>
-                    <div class="form-group row">
-                      <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Email</label>
-                      <div class="col-sm-9">
-                        <input type="email" class="form-control" id="exampleInputEmail2" placeholder="Email">
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <label for="exampleInputMobile" class="col-sm-3 col-form-label">Mobile</label>
-                      <div class="col-sm-9">
-                        <input type="text" class="form-control" id="exampleInputMobile" placeholder="Mobile number">
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <label for="exampleInputPassword2" class="col-sm-3 col-form-label">Password</label>
-                      <div class="col-sm-9">
-                        <input type="password" class="form-control" id="exampleInputPassword2" placeholder="Password">
-                      </div>
-                    </div>
-                    <div class="form-group row">
-                      <label for="exampleInputConfirmPassword2" class="col-sm-3 col-form-label">Re Password</label>
-                      <div class="col-sm-9">
-                        <input type="password" class="form-control" id="exampleInputConfirmPassword2"
-                          placeholder="Password">
-                      </div>
-                    </div>
-                    <div class="form-check form-check-flat form-check-primary">
-                      <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input">
-                        Remember me
-                      </label>
-                    </div>
-                    <button type="submit" class="btn btn-primary me-2">Submit</button>
-                    <button class="btn btn-light">Cancel</button>
+                    <input type="submit" class="btn btn-primary me-2" name="addproduct" value="Add product">
+                   
                   </form>
                 </div>
               </div>
@@ -587,7 +604,7 @@
         <footer class="footer">
   <div class="d-sm-flex justify-content-center justify-content-sm-between">
     <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Premium <a
-        href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a> from BootstrapDash.</span>
+        href="https://www.bootstrapdash.com/" target="_blank">First Wish Stationery</a></span>
     <span class="float-none float-sm-end d-block mt-1 mt-sm-0 text-center">Copyright © 2021. All rights reserved.</span>
   </div>
 </footer>
